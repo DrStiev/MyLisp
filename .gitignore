@@ -1,5 +1,6 @@
 *.txt
 lispy
+.vscode
 
 # Prerequisites
 *.d
