@@ -4,32 +4,25 @@
 #include "parser/mpc.h"
 
 // use operator string to see which operation to perform
-long eval_op(long x, char *op, long y)
-{
-    if (strcmp(op, "+") == 0)
-    {
+long eval_op(long x, char *op, long y) {
+    if (strcmp(op, "+") == 0) {
         return x + y;
     }
-    if (strcmp(op, "-") == 0)
-    {
+    if (strcmp(op, "-") == 0) {
         return x - y;
     }
-    if (strcmp(op, "*") == 0)
-    {
+    if (strcmp(op, "*") == 0) {
         return x * y;
     }
-    if (strcmp(op, "/") == 0)
-    {
+    if (strcmp(op, "/") == 0) {
         return x / y;
     }
     return 0;
 }
 
-long eval(mpc_ast_t *t)
-{
+long eval(mpc_ast_t *t) {
     // if tagged as number return it directly
-    if (strstr(t->tag, "number"))
-    {
+    if (strstr(t->tag, "number")) {
         return atoi(t->contents);
     }
 
@@ -41,8 +34,7 @@ long eval(mpc_ast_t *t)
 
     // iterate the remaining children and combining them
     int i = 3;
-    while (strstr(t->children[i]->tag, "expr"))
-    {
+    while (strstr(t->children[i]->tag, "expr")) {
         x = eval_op(x, op, eval(t->children[i]));
         i++;
     }
@@ -57,8 +49,7 @@ long eval(mpc_ast_t *t)
 static char buffer[2048];
 
 // fake readline function
-char *readline(char *prompt)
-{
+char *readline(char *prompt) {
     fputs(prompt, stdout);
     fgets(buffer, 2048, stdin);
     char *cpy = malloc(strlen(buffer) + 1);
@@ -68,24 +59,24 @@ char *readline(char *prompt)
 }
 
 // fake add_history function
-void add_history(char *unused)
-{
+void add_history(char *unused) {
 }
 
 // otherwise include editline headers
 #else
 
 // the library editline provides two useful functions:
-// 1. readline to read user input from some prompt allowing for editing of that input
-// 2. add_history let record the history of inputs so that can be retrieved with the up and down arrows
+// 1. readline to read user input from some prompt allowing for editing of that
+// input
+// 2. add_history let record the history of inputs so that can be retrieved with
+// the up and down arrows
 #include <editline/history.h>
 #include <editline/readline.h>
 #endif
 
 // Start with an interactive prompt
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // use Polish Notation.
     // It's a notation for arithmetic
     // where the operator comes before the operands
@@ -99,7 +90,8 @@ int main(int argc, char **argv)
     mpc_parser_t *Expr = mpc_new("expr");
     mpc_parser_t *Lispy = mpc_new("lispy");
 
-    mpca_lang(MPCA_LANG_DEFAULT, "                                                     \
+    mpca_lang(MPCA_LANG_DEFAULT,
+              "                                                     \
     number   : /-?[0-9]+/ ;                             \
     operator : '+' | '-' | '*' | '/' ;                  \
     expr     : <number> | '(' <operator> <expr>+ ')' ;  \
@@ -111,23 +103,19 @@ int main(int argc, char **argv)
     puts("C-Lisp \"Lispy\" Version 0.0.0.0.3");
     puts("Press Ctrl+c to Exit\n");
 
-    while (1)
-    {
+    while (1) {
         // output our prompt and get input
         char *input = readline("Lispy> ");
         // add input to history
         add_history(input);
         // attempt to parse user input
         mpc_result_t r;
-        if (mpc_parse("<stdin>", input, Lispy, &r))
-        {
+        if (mpc_parse("<stdin>", input, Lispy, &r)) {
             // begin evaluation
             long result = eval(r.output);
             printf("%li\n", result);
             mpc_ast_delete(r.output);
-        }
-        else
-        {
+        } else {
             // otherwise print error
             mpc_err_print(r.error);
             mpc_err_delete(r.error);
