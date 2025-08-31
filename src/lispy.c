@@ -23,8 +23,7 @@ char *readline(char *prompt) {
 }
 
 // fake add_history function
-void add_history(char *unused) {
-}
+void add_history(char *unused) {}
 
 // otherwise include editline headers
 #else

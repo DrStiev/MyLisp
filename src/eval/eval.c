@@ -46,24 +46,16 @@ lval *builtin_op(lval *a, char *op) {
     lval *x = lval_pop(a, 0);
 
     // if no arguments and sub then perform unary negation
-    if ((strcmp(op, "-") == 0) && a->count == 0) {
-        x->num = -x->num;
-    }
+    if ((strcmp(op, "-") == 0) && a->count == 0) { x->num = -x->num; }
 
     // while there are still elemtns remaining
     while (a->count > 0) {
         // pop the next element
         lval *y = lval_pop(a, 0);
 
-        if (strcmp(op, "+") == 0) {
-            x->num += y->num;
-        }
-        if (strcmp(op, "-") == 0) {
-            x->num -= y->num;
-        }
-        if (strcmp(op, "*") == 0) {
-            x->num *= y->num;
-        }
+        if (strcmp(op, "+") == 0) { x->num += y->num; }
+        if (strcmp(op, "-") == 0) { x->num -= y->num; }
+        if (strcmp(op, "*") == 0) { x->num *= y->num; }
         if (strcmp(op, "/") == 0) {
             if (y->num == 0) {
                 lval_del(x);
@@ -156,24 +148,12 @@ lval *builtin_join(lval *a) {
 // need a function that can call the correct builtin function depending on what
 // symbol it encounters in evaluation
 lval *builtin(lval *a, char *func) {
-    if (strcmp("list", func) == 0) {
-        return builtin_list(a);
-    }
-    if (strcmp("head", func) == 0) {
-        return builtin_head(a);
-    }
-    if (strcmp("tail", func) == 0) {
-        return builtin_tail(a);
-    }
-    if (strcmp("join", func) == 0) {
-        return builtin_join(a);
-    }
-    if (strcmp("eval", func) == 0) {
-        return builtin_eval(a);
-    }
-    if (strstr("+-/*", func)) {
-        return builtin_op(a, func);
-    }
+    if (strcmp("list", func) == 0) { return builtin_list(a); }
+    if (strcmp("head", func) == 0) { return builtin_head(a); }
+    if (strcmp("tail", func) == 0) { return builtin_tail(a); }
+    if (strcmp("join", func) == 0) { return builtin_join(a); }
+    if (strcmp("eval", func) == 0) { return builtin_eval(a); }
+    if (strstr("+-/*", func)) { return builtin_op(a, func); }
     lval_del(a);
     return lval_err("Unknown Function!");
 }
@@ -186,20 +166,14 @@ lval *lval_eval_sexpr(lval *v) {
 
     // error checking
     for (int i = 0; i < v->count; i++) {
-        if (v->cell[i]->type == LVAL_ERR) {
-            return lval_take(v, i);
-        }
+        if (v->cell[i]->type == LVAL_ERR) { return lval_take(v, i); }
     }
 
     // empty expression
-    if (v->count == 0) {
-        return v;
-    }
+    if (v->count == 0) { return v; }
 
     // single expression
-    if (v->count == 1) {
-        return lval_take(v, 0);
-    }
+    if (v->count == 1) { return lval_take(v, 0); }
 
     // ensure first element is Symbol
     lval *f = lval_pop(v, 0);
@@ -217,9 +191,7 @@ lval *lval_eval_sexpr(lval *v) {
 
 lval *lval_eval(lval *v) {
     // evaluate Sexpression
-    if (v->type == LVAL_SEXPR) {
-        return lval_eval_sexpr(v);
-    }
+    if (v->type == LVAL_SEXPR) { return lval_eval_sexpr(v); }
     return v;
 }
 
@@ -233,42 +205,22 @@ lval *lval_read_num(mpc_ast_t *t) {
 // then evaluate this lval* to get the result of our program.
 lval *lval_read(mpc_ast_t *t) {
     // if Symbol or Number return conversion to that type
-    if (strstr(t->tag, "number")) {
-        return lval_read_num(t);
-    }
-    if (strstr(t->tag, "symbol")) {
-        return lval_sym(t->contents);
-    }
+    if (strstr(t->tag, "number")) { return lval_read_num(t); }
+    if (strstr(t->tag, "symbol")) { return lval_sym(t->contents); }
 
     // if root (>) or sexpr then  create empty list
     lval *x = NULL;
-    if (strcmp(t->tag, ">") == 0) {
-        x = lval_sexpr();
-    }
-    if (strstr(t->tag, "sexpr")) {
-        x = lval_sexpr();
-    }
-    if (strstr(t->tag, "qexpr")) {
-        x = lval_qexpr();
-    }
+    if (strcmp(t->tag, ">") == 0) { x = lval_sexpr(); }
+    if (strstr(t->tag, "sexpr")) { x = lval_sexpr(); }
+    if (strstr(t->tag, "qexpr")) { x = lval_qexpr(); }
 
     // fill this list with any valid expression contained within
     for (int i = 0; i < t->children_num; i++) {
-        if (strcmp(t->children[i]->contents, "(") == 0) {
-            continue;
-        }
-        if (strcmp(t->children[i]->contents, ")") == 0) {
-            continue;
-        }
-        if (strcmp(t->children[i]->contents, "}") == 0) {
-            continue;
-        }
-        if (strcmp(t->children[i]->contents, "{") == 0) {
-            continue;
-        }
-        if (strcmp(t->children[i]->tag, "regex") == 0) {
-            continue;
-        }
+        if (strcmp(t->children[i]->contents, "(") == 0) { continue; }
+        if (strcmp(t->children[i]->contents, ")") == 0) { continue; }
+        if (strcmp(t->children[i]->contents, "}") == 0) { continue; }
+        if (strcmp(t->children[i]->contents, "{") == 0) { continue; }
+        if (strcmp(t->children[i]->tag, "regex") == 0) { continue; }
         x = lval_add(x, lval_read(t->children[i]));
     }
     return x;

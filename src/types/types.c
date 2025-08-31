@@ -48,16 +48,11 @@ lval *lval_err(char *m) {
 void lval_del(lval *v) {
     switch (v->type) {
         // Do nothing special for number type
-        case LVAL_NUM:
-            break;
+        case LVAL_NUM: break;
 
         // for Err or Sym free the string data
-        case LVAL_ERR:
-            free(v->err);
-            break;
-        case LVAL_SYM:
-            free(v->sym);
-            break;
+        case LVAL_ERR: free(v->err); break;
+        case LVAL_SYM: free(v->sym); break;
 
         // if Qexpr or Sexpr then delete all elements inside
         case LVAL_QEXPR:
