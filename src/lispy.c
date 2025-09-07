@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "environment/env.h"
 #include "eval/eval.h"
 #include "parser/mpc.h"
 #include "print/print.h"
+#include "types/builtin.h"
 #include "types/types.h"
 
 // if we are compiling on windows compile these functions
@@ -51,8 +53,7 @@ int main(int argc, char **argv) {
     mpca_lang(MPCA_LANG_DEFAULT,
               "                                                        \
     number : /-?[0-9]+/ ;                                  \
-    symbol : \"list\" | \"head\" | \"tail\"                \
-           | \"join\" | \"eval\" | '+' | '-' | '*' | '/' ; \
+    symbol : /[a-zA-Z0-9_+\\-*\\/\\\\=<>!&]+/ ;         \
     sexpr  : '(' <expr>* ')' ;                             \
     qexpr  : '{' <expr>* '}' ;                             \
     expr   : <number> | <symbol> | <sexpr> | <qexpr> ;     \
@@ -61,8 +62,11 @@ int main(int argc, char **argv) {
               Number, Symbol, Sexpr, Qexpr, Expr, Lispy);
 
     // print Version and Exit information
-    puts("C-Lisp \"Lispy\" Version 0.0.0.0.6");
+    puts("C-Lisp \"Lispy\" Version 0.0.0.0.7");
     puts("Press Ctrl+c to Exit\n");
+
+    lenv *e = lenv_new();
+    lenv_add_builtins(e);
 
     while (1) {
         // output our prompt and get input
@@ -73,7 +77,7 @@ int main(int argc, char **argv) {
         mpc_result_t r;
         if (mpc_parse("<stdin>", input, Lispy, &r)) {
             // begin evaluation
-            lval *x = lval_eval(lval_read(r.output));
+            lval *x = lval_eval(e, lval_read(r.output));
             lval_println(x);
             lval_del(x);
             mpc_ast_delete(r.output);
@@ -85,7 +89,7 @@ int main(int argc, char **argv) {
         // free retrieved input
         free(input);
     }
-
+    lenv_del(e);
     // undefine and delete parser
     mpc_cleanup(6, Number, Symbol, Sexpr, Expr, Lispy);
     return 0;
